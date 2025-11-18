@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +16,9 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
+// Check if we're in development mode
+const isDevelopmentMode = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY === 'pk_test_placeholder';
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
@@ -26,20 +31,32 @@ export default function LandingPage() {
           </Link>
 
           <div className="flex items-center gap-4">
-            <SignedIn>
-              <Link href="/chat">
-                <Button>Go to App</Button>
-              </Link>
-            </SignedIn>
+            {isDevelopmentMode ? (
+              // Development mode: show static buttons
+              <>
+                <Link href="/chat">
+                  <Button>Go to App</Button>
+                </Link>
+              </>
+            ) : (
+              // Production mode: use Clerk components
+              <>
+                <SignedIn>
+                  <Link href="/chat">
+                    <Button>Go to App</Button>
+                  </Link>
+                </SignedIn>
 
-            <SignedOut>
-              <SignInButton mode="modal">
-                <Button variant="ghost">Sign In</Button>
-              </SignInButton>
-              <SignUpButton mode="modal">
-                <Button>Get Started Free</Button>
-              </SignUpButton>
-            </SignedOut>
+                <SignedOut>
+                  <SignInButton mode="modal">
+                    <Button variant="ghost">Sign In</Button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <Button>Get Started Free</Button>
+                  </SignUpButton>
+                </SignedOut>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -60,27 +77,46 @@ export default function LandingPage() {
         </p>
 
         <div className="flex gap-4 justify-center flex-wrap">
-          <SignedOut>
-            <SignUpButton mode="modal">
-              <Button size="lg" className="gap-2">
-                Start Free Trial <ArrowRight className="w-4 h-4" />
-              </Button>
-            </SignUpButton>
-          </SignedOut>
+          {isDevelopmentMode ? (
+            // Development mode: show static buttons
+            <>
+              <Link href="/chat">
+                <Button size="lg" className="gap-2">
+                  Start Free Trial <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+              <Link href="/pricing">
+                <Button size="lg" variant="outline">
+                  View Pricing
+                </Button>
+              </Link>
+            </>
+          ) : (
+            // Production mode: use Clerk components
+            <>
+              <SignedOut>
+                <SignUpButton mode="modal">
+                  <Button size="lg" className="gap-2">
+                    Start Free Trial <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </SignUpButton>
+              </SignedOut>
 
-          <SignedIn>
-            <Link href="/chat">
-              <Button size="lg" className="gap-2">
-                Go to Chat <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
-          </SignedIn>
+              <SignedIn>
+                <Link href="/chat">
+                  <Button size="lg" className="gap-2">
+                    Go to Chat <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </Link>
+              </SignedIn>
 
-          <Link href="/pricing">
-            <Button size="lg" variant="outline">
-              View Pricing
-            </Button>
-          </Link>
+              <Link href="/pricing">
+                <Button size="lg" variant="outline">
+                  View Pricing
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
 
         <div className="mt-12 flex items-center justify-center gap-8 text-sm text-muted-foreground">
@@ -180,21 +216,33 @@ export default function LandingPage() {
               Join thousands of engineers using AI to solve complex problems faster
             </p>
 
-            <SignedOut>
-              <SignUpButton mode="modal">
+            {isDevelopmentMode ? (
+              // Development mode: show static button
+              <Link href="/chat">
                 <Button size="lg" variant="secondary" className="gap-2">
                   Start Free Trial <ArrowRight className="w-4 h-4" />
                 </Button>
-              </SignUpButton>
-            </SignedOut>
-
-            <SignedIn>
-              <Link href="/chat">
-                <Button size="lg" variant="secondary" className="gap-2">
-                  Go to Chat <ArrowRight className="w-4 h-4" />
-                </Button>
               </Link>
-            </SignedIn>
+            ) : (
+              // Production mode: use Clerk components
+              <>
+                <SignedOut>
+                  <SignUpButton mode="modal">
+                    <Button size="lg" variant="secondary" className="gap-2">
+                      Start Free Trial <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </SignUpButton>
+                </SignedOut>
+
+                <SignedIn>
+                  <Link href="/chat">
+                    <Button size="lg" variant="secondary" className="gap-2">
+                      Go to Chat <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </Link>
+                </SignedIn>
+              </>
+            )}
           </CardContent>
         </Card>
       </section>
