@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { UserButton, SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
-import { Wrench, MessageSquare, BookOpen, LayoutDashboard } from "lucide-react";
+import { Wrench, MessageSquare, BookOpen, LayoutDashboard, User } from "lucide-react";
+
+// Check if we're in development mode
+const isDevelopmentMode = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY === 'pk_test_placeholder';
 
 export function Header() {
   return (
@@ -16,29 +19,57 @@ export function Header() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
-            <SignedIn>
-              <Link
-                href="/chat"
-                className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"
-              >
-                <MessageSquare className="w-4 h-4" />
-                Chat
-              </Link>
-              <Link
-                href="/knowledge"
-                className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"
-              >
-                <BookOpen className="w-4 h-4" />
-                Knowledge Base
-              </Link>
-              <Link
-                href="/dashboard"
-                className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"
-              >
-                <LayoutDashboard className="w-4 h-4" />
-                Dashboard
-              </Link>
-            </SignedIn>
+            {isDevelopmentMode ? (
+              // Development mode: show all nav links
+              <>
+                <Link
+                  href="/chat"
+                  className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Chat
+                </Link>
+                <Link
+                  href="/knowledge"
+                  className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  Knowledge Base
+                </Link>
+                <Link
+                  href="/dashboard"
+                  className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  Dashboard
+                </Link>
+              </>
+            ) : (
+              // Production mode: use Clerk components
+              <SignedIn>
+                <Link
+                  href="/chat"
+                  className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Chat
+                </Link>
+                <Link
+                  href="/knowledge"
+                  className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  Knowledge Base
+                </Link>
+                <Link
+                  href="/dashboard"
+                  className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  Dashboard
+                </Link>
+              </SignedIn>
+            )}
 
             <Link
               href="/pricing"
@@ -50,20 +81,31 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-4">
-          <SignedIn>
-            <UserButton afterSignOutUrl="/" />
-          </SignedIn>
+          {isDevelopmentMode ? (
+            // Development mode: show mock user button
+            <Button variant="ghost" size="sm" className="gap-2">
+              <User className="w-4 h-4" />
+              Demo User
+            </Button>
+          ) : (
+            // Production mode: use Clerk components
+            <>
+              <SignedIn>
+                <UserButton afterSignOutUrl="/" />
+              </SignedIn>
 
-          <SignedOut>
-            <SignInButton mode="modal">
-              <Button variant="ghost" size="sm">
-                Sign In
-              </Button>
-            </SignInButton>
-            <SignInButton mode="modal">
-              <Button size="sm">Get Started</Button>
-            </SignInButton>
-          </SignedOut>
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <Button variant="ghost" size="sm">
+                    Sign In
+                  </Button>
+                </SignInButton>
+                <SignInButton mode="modal">
+                  <Button size="sm">Get Started</Button>
+                </SignInButton>
+              </SignedOut>
+            </>
+          )}
         </div>
       </div>
     </header>

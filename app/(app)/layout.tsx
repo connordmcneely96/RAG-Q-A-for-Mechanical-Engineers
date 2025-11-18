@@ -1,4 +1,4 @@
-import { ClerkProvider } from "@clerk/nextjs";
+import { AuthProvider } from "@/components/providers/auth-provider";
 import { Header } from "@/components/layouts/header";
 
 export default function AppLayout({
@@ -7,11 +7,11 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
+    <AuthProvider>
       <div className="flex flex-col min-h-screen">
         <Header />
         <main className="flex-1">{children}</main>
       </div>
-    </ClerkProvider>
+    </AuthProvider>
   );
 }

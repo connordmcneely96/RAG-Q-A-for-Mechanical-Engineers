@@ -1,9 +1,14 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2 } from "lucide-react";
 import { SignUpButton } from "@clerk/nextjs";
 import Link from "next/link";
+
+// Check if we're in development mode
+const isDevelopmentMode = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY === 'pk_test_placeholder';
 
 export default function PricingPage() {
   return (
@@ -39,11 +44,17 @@ export default function PricingPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <SignUpButton mode="modal">
+              {isDevelopmentMode ? (
                 <Button className="w-full" variant="outline">
                   Get Started
                 </Button>
-              </SignUpButton>
+              ) : (
+                <SignUpButton mode="modal">
+                  <Button className="w-full" variant="outline">
+                    Get Started
+                  </Button>
+                </SignUpButton>
+              )}
               <ul className="mt-6 space-y-3">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5" />
