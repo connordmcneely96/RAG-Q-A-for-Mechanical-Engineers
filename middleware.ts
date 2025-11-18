@@ -9,7 +9,15 @@ const isPublicRoute = createRouteMatcher([
   "/api/webhooks(.*)",
 ]);
 
+// Development mode: bypass auth if using placeholder keys
+const isDevelopmentMode = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY === 'pk_test_placeholder';
+
 export default clerkMiddleware(async (auth, request) => {
+  // In development mode with placeholder keys, allow all routes for UI preview
+  if (isDevelopmentMode) {
+    return;
+  }
+
   if (!isPublicRoute(request)) {
     await auth.protect();
   }
