@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { getOrCreateUser } from "@/lib/auth/clerk";
 import { createFeedback } from "@/lib/db/queries";
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function POST(req: Request) {
   try {
     const user = await getOrCreateUser();

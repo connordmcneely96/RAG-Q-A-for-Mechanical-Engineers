@@ -2,6 +2,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Upload, FileText } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
+
 export default function KnowledgePage() {
   return (
     <div className="container mx-auto px-4 py-6">

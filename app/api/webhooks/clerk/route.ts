@@ -4,6 +4,9 @@ import type { WebhookEvent } from "@clerk/nextjs/server";
 import { createUser } from "@/lib/db/queries";
 import { prisma } from "@/lib/db/client";
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 

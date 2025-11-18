@@ -3,6 +3,9 @@ import { getOrCreateUser } from "@/lib/auth/clerk";
 import { getConversationById } from "@/lib/db/queries";
 import { prisma } from "@/lib/db/client";
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function GET(
   req: Request,
   { params }: { params: { id: string } }
