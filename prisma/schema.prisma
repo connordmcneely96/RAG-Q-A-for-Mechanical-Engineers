@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  conversations Conversation[]
+  documents     Document[]
+  feedback      Feedback[]
+  subscription  Subscription?
+
+  @@index([clerkId])
+  @@index([email])
+}
+
+model Conversation {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String // Auto-generated from first question
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([userId, createdAt])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String // "user" | "assistant"
+  content        String       @db.Text
+  sources        Json? // Array of source documents with scores
+  tokenCount     Int?
+  createdAt      DateTime     @default(now())
+
+  feedback Feedback?
+
+  @@index([conversationId, createdAt])
+}
+
+model Document {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  filename        String
+  fileSize        Int
+  fileType        String
+  pineconeIds     String[] // Vector IDs in Pinecone
+  chunkCount      Int
+  metadata        Json // {category, tags, standards, software}
+  status          String // "processing" | "ready" | "failed"
+  processingError String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId, status])
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messageId String   @unique
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  helpful   Boolean
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([userId, helpful])
+}
+
+model Subscription {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier         String   @default("free") // "free" | "pro" | "enterprise"
+  status       String   @default("active") // "active" | "cancelled" | "expired"
+  queriesUsed  Int      @default(0)
+  queriesLimit Int      @default(50)
+  periodStart  DateTime @default(now())
+  periodEnd    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId, status])
+}
