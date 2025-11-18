@@ -5,7 +5,7 @@ import { createMessage, createConversation, checkQueryLimit, incrementQueryUsage
 import { similaritySearch } from "@/lib/rag/retriever";
 import { ENGINEERING_SYSTEM_PROMPT } from "@/lib/rag/prompts";
 
-export const runtime = "edge";
+// Use Node.js runtime for LangChain and Pinecone compatibility
 export const maxDuration = 60;
 
 export async function POST(req: Request) {

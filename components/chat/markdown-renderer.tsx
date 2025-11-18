@@ -70,9 +70,9 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
   };
 
   return (
-    <ReactMarkdown
-      className="prose prose-sm max-w-none dark:prose-invert"
-      components={{
+    <div className="prose prose-sm max-w-none dark:prose-invert">
+      <ReactMarkdown
+        components={{
         code({ node, inline, className, children, ...props }: any) {
           const match = /language-(\w+)/.exec(className || "");
           const codeString = String(children).replace(/\n$/, "");
@@ -97,14 +97,14 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
             </code>
           );
         },
-        p({ children }) {
+        p({ children }: any) {
           const text = String(children);
           if (text.includes("$$") || text.includes("$")) {
             return <div className="my-2">{processLatex(text)}</div>;
           }
           return <p>{children}</p>;
         },
-        table({ children }) {
+        table({ children }: any) {
           return (
             <div className="overflow-x-auto my-4">
               <table className="min-w-full divide-y divide-border">
@@ -113,19 +113,20 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
             </div>
           );
         },
-        th({ children }) {
+        th({ children }: any) {
           return (
             <th className="px-4 py-2 bg-muted text-left text-xs font-medium uppercase tracking-wider">
               {children}
             </th>
           );
         },
-        td({ children }) {
+        td({ children }: any) {
           return <td className="px-4 py-2 border-t">{children}</td>;
         },
       }}
-    >
-      {content}
-    </ReactMarkdown>
+      >
+        {content}
+      </ReactMarkdown>
+    </div>
   );
 }

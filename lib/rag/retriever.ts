@@ -43,8 +43,8 @@ export async function createRetriever(options: RetrievalOptions = {}) {
     searchKwargs: {
       fetchK: k * 4, // Fetch more candidates for MMR
       lambda: 0.5, // Balance between relevance and diversity
-      filter,
     },
+    filter,
   });
 
   return retriever;

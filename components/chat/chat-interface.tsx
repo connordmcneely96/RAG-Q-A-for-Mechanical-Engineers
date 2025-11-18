@@ -51,13 +51,13 @@ export function ChatInterface({ conversationId }: ChatInterfaceProps) {
                   Try asking:
                 </p>
                 <Card className="p-3 text-sm text-left cursor-pointer hover:bg-muted transition-colors">
-                  "What is the yield strength of 6061-T6 aluminum?"
+                  &ldquo;What is the yield strength of 6061-T6 aluminum?&rdquo;
                 </Card>
                 <Card className="p-3 text-sm text-left cursor-pointer hover:bg-muted transition-colors">
-                  "How do I apply GD&T to a cylindrical feature?"
+                  &ldquo;How do I apply GD&T to a cylindrical feature?&rdquo;
                 </Card>
                 <Card className="p-3 text-sm text-left cursor-pointer hover:bg-muted transition-colors">
-                  "What's the difference between FEA and CFD?"
+                  &ldquo;What&rsquo;s the difference between FEA and CFD?&rdquo;
                 </Card>
               </div>
             </div>

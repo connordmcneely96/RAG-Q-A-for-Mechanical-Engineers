@@ -60,11 +60,18 @@
 }
 
 @layer base {
+  :root {
+    --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-jetbrains-mono: 'JetBrains Mono', 'Courier New', monospace;
+    --font-ibm-plex-mono: 'IBM Plex Mono', monospace;
+  }
+
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-inter);
   }
 }
 
