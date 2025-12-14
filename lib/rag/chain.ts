@@ -1,8 +1,6 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
-import { createRetrievalChain } from "langchain/chains/retrieval";
-import { createRetriever } from "./retriever";
+import { similaritySearch } from "./retriever";
 import { ENGINEERING_SYSTEM_PROMPT } from "./prompts";
 
 export interface RAGChainOptions {
@@ -35,12 +33,6 @@ export async function createEngineeringRAGChain(options: RAGChainOptions = {}) {
     maxOutputTokens,
   });
 
-  // Create retriever
-  const retriever = await createRetriever({
-    k: retrievalK,
-    filter,
-  });
-
   // Create the prompt template
   const prompt = ChatPromptTemplate.fromMessages([
     ["system", ENGINEERING_SYSTEM_PROMPT],
@@ -48,19 +40,24 @@ export async function createEngineeringRAGChain(options: RAGChainOptions = {}) {
     ["human", "{input}"],
   ]);
 
-  // Create the document combination chain
-  const combineDocsChain = await createStuffDocumentsChain({
-    llm: model,
-    prompt,
-  });
+  return {
+    async invoke({ input }: { input: string }) {
+      const docs = await similaritySearch(input, { k: retrievalK, filter });
+      const context = docs
+        .map((d, idx) => `[Source ${idx + 1}] ${d.content}`)
+        .join("\n\n");
 
-  // Create the final retrieval chain
-  const chain = await createRetrievalChain({
-    retriever,
-    combineDocsChain,
-  });
+      const messages = await prompt.formatMessages({
+        input,
+        context,
+      });
 
-  return chain;
+      const res: any = await model.invoke(messages as any);
+      const answer = typeof res?.content === "string" ? res.content : String(res?.content ?? "");
+
+      return { answer, context: docs };
+    },
+  };
 }
 
 /**
@@ -87,12 +84,6 @@ export async function createStreamingRAGChain(options: RAGChainOptions = {}) {
     streaming: true,
   });
 
-  // Create retriever
-  const retriever = await createRetriever({
-    k: retrievalK,
-    filter,
-  });
-
   // Create the prompt template
   const prompt = ChatPromptTemplate.fromMessages([
     ["system", ENGINEERING_SYSTEM_PROMPT],
@@ -100,19 +91,21 @@ export async function createStreamingRAGChain(options: RAGChainOptions = {}) {
     ["human", "{input}"],
   ]);
 
-  // Create the document combination chain
-  const combineDocsChain = await createStuffDocumentsChain({
-    llm: model,
-    prompt,
-  });
+  return {
+    async stream({ input }: { input: string }) {
+      const docs = await similaritySearch(input, { k: retrievalK, filter });
+      const context = docs
+        .map((d, idx) => `[Source ${idx + 1}] ${d.content}`)
+        .join("\n\n");
 
-  // Create the final retrieval chain
-  const chain = await createRetrievalChain({
-    retriever,
-    combineDocsChain,
-  });
+      const messages = await prompt.formatMessages({
+        input,
+        context,
+      });
 
-  return chain;
+      return model.stream(messages as any);
+    },
+  };
 }
 
 /**
@@ -123,13 +116,6 @@ export async function askQuestion(
   options: RAGChainOptions = {}
 ) {
   const chain = await createEngineeringRAGChain(options);
-
-  const response = await chain.invoke({
-    input: question,
-  });
-
-  return {
-    answer: response.answer,
-    sources: response.context,
-  };
+  const response = await chain.invoke({ input: question });
+  return { answer: response.answer, sources: response.context };
 }

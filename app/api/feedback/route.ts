@@ -3,7 +3,7 @@ import { getOrCreateUser } from "@/lib/auth/clerk";
 import { createFeedback } from "@/lib/db/queries";
 
 export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export async function POST(req: Request) {
   try {

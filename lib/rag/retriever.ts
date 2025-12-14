@@ -1,53 +1,10 @@
-import { PineconeStore } from "@langchain/pinecone";
-import { getEmbeddings } from "./embeddings";
-import { getPineconeIndex } from "./pinecone-client";
+import { embedDocuments, embedText } from "./embeddings";
+import { pineconeQuery, pineconeUpsert } from "./pinecone-client";
 
 export interface RetrievalOptions {
   k?: number; // Number of documents to retrieve
   filter?: Record<string, any>; // Metadata filters
   namespace?: string; // Pinecone namespace
-}
-
-/**
- * Create a Pinecone vector store instance
- */
-export async function createVectorStore(namespace: string = "engineering-docs") {
-  const embeddings = getEmbeddings();
-  const pineconeIndex = getPineconeIndex();
-
-  const vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
-    pineconeIndex,
-    textKey: "text",
-    namespace,
-  });
-
-  return vectorStore;
-}
-
-/**
- * Create a retriever with configurable options
- */
-export async function createRetriever(options: RetrievalOptions = {}) {
-  const {
-    k = 5,
-    filter = {},
-    namespace = "engineering-docs",
-  } = options;
-
-  const vectorStore = await createVectorStore(namespace);
-
-  // Create retriever with MMR (Maximum Marginal Relevance) for diversity
-  const retriever = vectorStore.asRetriever({
-    k,
-    searchType: "mmr",
-    searchKwargs: {
-      fetchK: k * 4, // Fetch more candidates for MMR
-      lambda: 0.5, // Balance between relevance and diversity
-    },
-    filter,
-  });
-
-  return retriever;
 }
 
 /**
@@ -59,14 +16,21 @@ export async function similaritySearch(
 ) {
   const { k = 5, filter = {}, namespace = "engineering-docs" } = options;
 
-  const vectorStore = await createVectorStore(namespace);
+  const vector = await embedText(query);
+  const result = await pineconeQuery({
+    vector,
+    topK: k,
+    namespace,
+    filter,
+    includeMetadata: true,
+  });
 
-  const results = await vectorStore.similaritySearchWithScore(query, k, filter);
+  const matches: any[] = result?.matches || [];
 
-  return results.map(([doc, score]) => ({
-    content: doc.pageContent,
-    metadata: doc.metadata,
-    relevanceScore: score,
+  return matches.map((m) => ({
+    content: m?.metadata?.text || "",
+    metadata: m?.metadata || {},
+    relevanceScore: m?.score ?? 0,
   }));
 }
 
@@ -77,13 +41,24 @@ export async function addDocumentsToVectorStore(
   documents: Array<{ pageContent: string; metadata: Record<string, any> }>,
   namespace: string = "engineering-docs"
 ) {
-  const embeddings = getEmbeddings();
-  const pineconeIndex = getPineconeIndex();
+  const texts = documents.map((d) => d.pageContent);
+  const vectors = await embedDocuments(texts);
 
-  const ids = await PineconeStore.fromDocuments(documents, embeddings, {
-    pineconeIndex,
-    textKey: "text",
+  const ids = documents.map(() => crypto.randomUUID());
+
+  const upsertVectors = ids.map((id, i) => ({
+    id,
+    values: vectors[i],
+    metadata: {
+      // Stored under `text` so retrieval can return content without another fetch.
+      text: documents[i].pageContent,
+      ...documents[i].metadata,
+    },
+  }));
+
+  await pineconeUpsert({
     namespace,
+    vectors: upsertVectors,
   });
 
   return ids;

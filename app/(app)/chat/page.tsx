@@ -2,6 +2,7 @@ import { ChatInterface } from "@/components/chat/chat-interface";
 import { Card } from "@/components/ui/card";
 
 export const dynamic = 'force-dynamic';
+export const runtime = "edge";
 
 export default function ChatPage() {
   return (

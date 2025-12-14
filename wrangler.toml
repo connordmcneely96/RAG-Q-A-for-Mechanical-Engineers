@@ -1,0 +1,13 @@
+# Cloudflare configuration for local Pages dev + Workers runtime flags.
+#
+# Deploy via Cloudflare Pages (recommended for Next.js):
+# - Build command: npm run build:cloudflare
+# - Output directory: .vercel/output/static
+# - Set secrets/vars in the Pages dashboard
+
+name = "mechassist-ai"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Wrangler uses this for `wrangler pages dev`.
+pages_build_output_dir = ".vercel/output/static"

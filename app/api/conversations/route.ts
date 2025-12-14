@@ -3,7 +3,7 @@ import { getOrCreateUser } from "@/lib/auth/clerk";
 import { getConversationsByUserId } from "@/lib/db/queries";
 
 export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export async function GET() {
   try {

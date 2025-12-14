@@ -12,8 +12,9 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 export default function middleware(request: NextRequest) {
-  // Development mode: bypass auth if using placeholder keys
-  const isDevelopmentMode = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY === 'pk_test_placeholder';
+  // Development mode / preview: bypass auth if keys are missing or placeholders
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  const isDevelopmentMode = !publishableKey || publishableKey === "pk_test_placeholder";
 
   // In development mode, allow all requests without Clerk
   if (isDevelopmentMode) {

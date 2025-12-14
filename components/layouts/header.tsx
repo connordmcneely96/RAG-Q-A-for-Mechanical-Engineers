@@ -5,8 +5,9 @@ import { UserButton, SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Wrench, MessageSquare, BookOpen, LayoutDashboard, User } from "lucide-react";
 
-// Check if we're in development mode
-const isDevelopmentMode = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY === 'pk_test_placeholder';
+// Treat missing keys as dev/preview mode (prevents build-time failures)
+const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const isDevelopmentMode = !publishableKey || publishableKey === "pk_test_placeholder";
 
 export function Header() {
   return (
