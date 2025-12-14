@@ -4,6 +4,7 @@ import { getOrCreateUser } from "@/lib/auth/clerk";
 import { createMessage, createConversation, checkQueryLimit, incrementQueryUsage } from "@/lib/db/queries";
 import { similaritySearch } from "@/lib/rag/retriever";
 import { ENGINEERING_SYSTEM_PROMPT } from "@/lib/rag/prompts";
+import { isPreviewMode } from "@/lib/preview";
 
 // Use Node.js runtime for LangChain and Pinecone compatibility
 export const dynamic = 'force-dynamic';
@@ -12,23 +13,13 @@ export const maxDuration = 60;
 
 export async function POST(req: Request) {
   try {
-    if (!process.env.GOOGLE_API_KEY) {
-      return new Response(
-        "Server is missing GOOGLE_API_KEY. Configure it in Cloudflare Pages env vars.",
-        { status: 503 }
-      );
-    }
-    if (!process.env.PINECONE_API_KEY || !(process.env.PINECONE_HOST || process.env.PINECONE_INDEX_NAME)) {
-      return new Response(
-        "Server is missing Pinecone config (PINECONE_API_KEY and PINECONE_HOST recommended).",
-        { status: 503 }
-      );
-    }
-
     const { messages, conversationId } = await req.json();
 
     // Authenticate user
     const user = await getOrCreateUser();
+    if (!user) {
+      return new Response("Unauthorized", { status: 401 });
+    }
 
     // Check query limit
     const hasQueries = await checkQueryLimit(user.id);
@@ -45,6 +36,59 @@ export async function POST(req: Request) {
     }
 
     const userQuestion = lastMessage.content;
+
+    // Preview mode: return a fast, deterministic mock answer (no external services).
+    if (isPreviewMode() || !process.env.GOOGLE_API_KEY) {
+      const encoder = new TextEncoder();
+
+      const mockCompletion =
+        `Preview mode answer (no external services).\n\n` +
+        `You asked: ${userQuestion}\n\n` +
+        `- Key points: (1) clarify assumptions, (2) show steps, (3) give practical guidance.\n` +
+        `- Next step: ask one follow-up to lock inputs, then compute.\n\n` +
+        `If you want live answers, configure Clerk + DB + GOOGLE_API_KEY + Pinecone in Cloudflare.`;
+
+      // Create or get conversation
+      let convId: string = conversationId as string;
+      if (!convId) {
+        const conv = await createConversation(user.id, userQuestion.slice(0, 100));
+        convId = conv.id;
+      }
+
+      await createMessage({
+        conversationId: convId,
+        role: "user",
+        content: userQuestion,
+      });
+
+      await createMessage({
+        conversationId: convId,
+        role: "assistant",
+        content: mockCompletion,
+        sources: [
+          { content: "Preview citation: Example handbook excerpt…", metadata: { source: "preview" }, score: 0.92 },
+          { content: "Preview citation: Example standard clause…", metadata: { source: "preview" }, score: 0.88 },
+        ],
+      });
+
+      await incrementQueryUsage(user.id);
+
+      const stream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(encoder.encode(mockCompletion));
+          controller.close();
+        },
+      });
+
+      return new StreamingTextResponse(stream);
+    }
+
+    if (!process.env.PINECONE_API_KEY || !(process.env.PINECONE_HOST || process.env.PINECONE_INDEX_NAME)) {
+      return new Response(
+        "Server is missing Pinecone config (PINECONE_API_KEY and PINECONE_HOST recommended).",
+        { status: 503 }
+      );
+    }
 
     // Retrieve relevant documents from Pinecone
     const relevantDocs = await similaritySearch(userQuestion, {

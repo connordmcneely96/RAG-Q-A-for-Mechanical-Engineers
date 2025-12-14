@@ -106,11 +106,9 @@ export function ChatInterface({ conversationId }: ChatInterfaceProps) {
       {/* Input Area */}
       <div className="px-4 pb-4">
         <ChatInput
-          onSend={(message) => {
-            handleSubmit(new Event("submit") as any, {
-              data: { message },
-            });
-          }}
+          value={input}
+          onChange={(value) => handleInputChange({ target: { value } } as any)}
+          onSubmit={() => handleSubmit(new Event("submit") as any)}
           isLoading={isLoading}
         />
       </div>

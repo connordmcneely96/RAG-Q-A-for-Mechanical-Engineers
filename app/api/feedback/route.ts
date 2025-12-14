@@ -8,6 +8,9 @@ export const runtime = 'edge';
 export async function POST(req: Request) {
   try {
     const user = await getOrCreateUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const { messageId, helpful, comment } = await req.json();
 
     if (!messageId || typeof helpful !== "boolean") {

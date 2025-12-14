@@ -9,6 +9,7 @@ import {
 } from "@/lib/db/queries";
 import { addDocumentsToVectorStore } from "@/lib/rag/retriever";
 import { cleanText, processDocument } from "@/lib/rag/document-processor";
+import { isPreviewMode } from "@/lib/preview";
 
 export const dynamic = "force-dynamic";
 export const runtime = "edge";
@@ -19,6 +20,9 @@ const MAX_UPLOAD_BYTES = 15 * 1024 * 1024; // 15MB
 export async function GET() {
   try {
     const user = await getOrCreateUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const documents = await getDocumentsByUserId(user.id);
 
     return NextResponse.json({ documents });
@@ -33,24 +37,14 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const user = await getOrCreateUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   // Create DB record early so we can show progress/failure.
   let documentId: string | null = null;
 
   try {
-    if (!process.env.GOOGLE_API_KEY) {
-      return NextResponse.json(
-        { error: "Server is missing GOOGLE_API_KEY. Configure it in Cloudflare Pages env vars." },
-        { status: 503 }
-      );
-    }
-    if (!process.env.PINECONE_API_KEY) {
-      return NextResponse.json(
-        { error: "Server is missing PINECONE_API_KEY. Configure it in Cloudflare Pages env vars." },
-        { status: 503 }
-      );
-    }
-
     const formData = await req.formData();
     const file = formData.get("file");
 
@@ -94,6 +88,36 @@ export async function POST(req: Request) {
     });
 
     documentId = document.id;
+
+    // Preview mode: skip PDF parsing + embeddings + Pinecone.
+    if (isPreviewMode()) {
+      const updated = await updateDocument(document.id, {
+        pineconeIds: [],
+        chunkCount: 12,
+        metadata: {
+          ...metadata,
+          namespace: `user-${user.id}`,
+          preview: true,
+        },
+        status: "ready",
+        processingError: null,
+      });
+
+      return NextResponse.json({ document: updated });
+    }
+
+    if (!process.env.GOOGLE_API_KEY) {
+      return NextResponse.json(
+        { error: "Server is missing GOOGLE_API_KEY. Configure it in Cloudflare Pages env vars." },
+        { status: 503 }
+      );
+    }
+    if (!process.env.PINECONE_API_KEY) {
+      return NextResponse.json(
+        { error: "Server is missing PINECONE_API_KEY. Configure it in Cloudflare Pages env vars." },
+        { status: 503 }
+      );
+    }
 
     const arrayBuffer = await file.arrayBuffer();
 

@@ -6,6 +6,16 @@ export const runtime = "edge";
 
 export default async function DashboardPage() {
   const user = await getOrCreateUser();
+  if (!user) {
+    return (
+      <div className="container mx-auto px-4 py-6">
+        <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+        <p className="text-sm text-muted-foreground">
+          Preview mode: no authenticated user.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-6">

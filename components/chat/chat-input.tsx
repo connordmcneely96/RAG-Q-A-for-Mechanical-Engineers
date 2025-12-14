@@ -1,31 +1,34 @@
 "use client";
 
-import { useState, useRef, FormEvent } from "react";
+import { useMemo, useRef, FormEvent } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Send, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ChatInputProps {
-  onSend: (message: string) => void;
+  value: string;
+  onChange: (value: string) => void;
+  onSubmit: () => void;
   isLoading?: boolean;
   placeholder?: string;
 }
 
 export function ChatInput({
-  onSend,
+  value,
+  onChange,
+  onSubmit,
   isLoading = false,
   placeholder = "Ask a mechanical engineering question...",
 }: ChatInputProps) {
-  const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const canSend = useMemo(() => value.trim().length > 0 && !isLoading, [value, isLoading]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!canSend) return;
 
-    onSend(input.trim());
-    setInput("");
+    onSubmit();
 
     // Reset textarea height
     if (textareaRef.current) {
@@ -50,8 +53,8 @@ export function ChatInput({
     <form onSubmit={handleSubmit} className="relative">
       <Textarea
         ref={textareaRef}
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
         onInput={handleInput}
         placeholder={placeholder}
@@ -66,7 +69,7 @@ export function ChatInput({
       <Button
         type="submit"
         size="icon"
-        disabled={!input.trim() || isLoading}
+        disabled={!canSend}
         className="absolute right-2 bottom-2"
       >
         {isLoading ? (

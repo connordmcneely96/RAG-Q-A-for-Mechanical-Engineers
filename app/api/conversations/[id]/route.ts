@@ -12,6 +12,9 @@ export async function GET(
 ) {
   try {
     const user = await getOrCreateUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const { id } = params;
 
     const conversation = await getConversationById(id);
@@ -44,6 +47,9 @@ export async function DELETE(
 ) {
   try {
     const user = await getOrCreateUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const { id } = params;
 
     const conversation = await getConversationById(id);

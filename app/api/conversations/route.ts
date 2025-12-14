@@ -8,6 +8,9 @@ export const runtime = 'edge';
 export async function GET() {
   try {
     const user = await getOrCreateUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const conversations = await getConversationsByUserId(user.id);
 
