@@ -38,6 +38,19 @@ export async function POST(req: Request) {
   let documentId: string | null = null;
 
   try {
+    if (!process.env.GOOGLE_API_KEY) {
+      return NextResponse.json(
+        { error: "Server is missing GOOGLE_API_KEY. Configure it in Cloudflare Pages env vars." },
+        { status: 503 }
+      );
+    }
+    if (!process.env.PINECONE_API_KEY) {
+      return NextResponse.json(
+        { error: "Server is missing PINECONE_API_KEY. Configure it in Cloudflare Pages env vars." },
+        { status: 503 }
+      );
+    }
+
     const formData = await req.formData();
     const file = formData.get("file");
 

@@ -12,6 +12,19 @@ export const maxDuration = 60;
 
 export async function POST(req: Request) {
   try {
+    if (!process.env.GOOGLE_API_KEY) {
+      return new Response(
+        "Server is missing GOOGLE_API_KEY. Configure it in Cloudflare Pages env vars.",
+        { status: 503 }
+      );
+    }
+    if (!process.env.PINECONE_API_KEY || !(process.env.PINECONE_HOST || process.env.PINECONE_INDEX_NAME)) {
+      return new Response(
+        "Server is missing Pinecone config (PINECONE_API_KEY and PINECONE_HOST recommended).",
+        { status: 503 }
+      );
+    }
+
     const { messages, conversationId } = await req.json();
 
     // Authenticate user
@@ -59,7 +72,7 @@ export async function POST(req: Request) {
 
     // Initialize Gemini model
     const model = new ChatGoogleGenerativeAI({
-      apiKey: process.env.GOOGLE_API_KEY!,
+      apiKey: process.env.GOOGLE_API_KEY,
       modelName: "gemini-2.0-flash-exp",
       temperature: 0.2,
       maxOutputTokens: 2048,
