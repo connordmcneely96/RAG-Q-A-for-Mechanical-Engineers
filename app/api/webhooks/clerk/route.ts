@@ -2,10 +2,10 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import type { WebhookEvent } from "@clerk/nextjs/server";
 import { createUser } from "@/lib/db/queries";
-import { prisma } from "@/lib/db/client";
+import { getPrisma } from "@/lib/db/client";
 
 export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
@@ -72,6 +72,7 @@ export async function POST(req: Request) {
     const { id } = evt.data;
 
     try {
+      const prisma = getPrisma();
       await prisma.user.delete({
         where: { clerkId: id || "" },
       });

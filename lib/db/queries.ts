@@ -1,9 +1,10 @@
-import { prisma } from "./client";
+import { getPrisma } from "./client";
 
 /**
  * User queries
  */
 export async function getUserByClerkId(clerkId: string) {
+  const prisma = getPrisma();
   return await prisma.user.findUnique({
     where: { clerkId },
     include: {
@@ -17,6 +18,7 @@ export async function createUser(data: {
   email: string;
   name?: string;
 }) {
+  const prisma = getPrisma();
   return await prisma.user.create({
     data: {
       ...data,
@@ -41,6 +43,7 @@ export async function createUser(data: {
  * Conversation queries
  */
 export async function getConversationsByUserId(userId: string) {
+  const prisma = getPrisma();
   return await prisma.conversation.findMany({
     where: { userId },
     orderBy: { updatedAt: "desc" },
@@ -54,6 +57,7 @@ export async function getConversationsByUserId(userId: string) {
 }
 
 export async function getConversationById(id: string) {
+  const prisma = getPrisma();
   return await prisma.conversation.findUnique({
     where: { id },
     include: {
@@ -65,6 +69,7 @@ export async function getConversationById(id: string) {
 }
 
 export async function createConversation(userId: string, title: string) {
+  const prisma = getPrisma();
   return await prisma.conversation.create({
     data: {
       userId,
@@ -83,6 +88,7 @@ export async function createMessage(data: {
   sources?: any;
   tokenCount?: number;
 }) {
+  const prisma = getPrisma();
   return await prisma.message.create({
     data,
   });
@@ -92,6 +98,7 @@ export async function createMessage(data: {
  * Document queries
  */
 export async function getDocumentsByUserId(userId: string) {
+  const prisma = getPrisma();
   return await prisma.document.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
@@ -108,6 +115,7 @@ export async function createDocument(data: {
   metadata: any;
   status: string;
 }) {
+  const prisma = getPrisma();
   return await prisma.document.create({
     data,
   });
@@ -118,12 +126,27 @@ export async function updateDocumentStatus(
   status: string,
   error?: string
 ) {
+  const prisma = getPrisma();
   return await prisma.document.update({
     where: { id },
     data: {
       status,
       processingError: error,
     },
+  });
+}
+
+export async function updateDocument(id: string, data: {
+  pineconeIds?: string[];
+  chunkCount?: number;
+  metadata?: any;
+  status?: string;
+  processingError?: string | null;
+}) {
+  const prisma = getPrisma();
+  return await prisma.document.update({
+    where: { id },
+    data,
   });
 }
 
@@ -136,6 +159,7 @@ export async function createFeedback(data: {
   helpful: boolean;
   comment?: string;
 }) {
+  const prisma = getPrisma();
   return await prisma.feedback.create({
     data,
   });
@@ -145,6 +169,7 @@ export async function createFeedback(data: {
  * Subscription queries
  */
 export async function incrementQueryUsage(userId: string) {
+  const prisma = getPrisma();
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: { subscription: true },
@@ -163,6 +188,7 @@ export async function incrementQueryUsage(userId: string) {
 }
 
 export async function checkQueryLimit(userId: string): Promise<boolean> {
+  const prisma = getPrisma();
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: { subscription: true },

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { getOrCreateUser } from "@/lib/auth/clerk";
 import { getConversationById } from "@/lib/db/queries";
-import { prisma } from "@/lib/db/client";
+import { getPrisma } from "@/lib/db/client";
 
 export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export async function GET(
   req: Request,
@@ -60,6 +60,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
+    const prisma = getPrisma();
     await prisma.conversation.delete({
       where: { id },
     });

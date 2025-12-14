@@ -7,8 +7,9 @@ import { CheckCircle2 } from "lucide-react";
 import { SignUpButton } from "@clerk/nextjs";
 import Link from "next/link";
 
-// Check if we're in development mode
-const isDevelopmentMode = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY === 'pk_test_placeholder';
+// Treat missing keys as dev/preview mode (prevents build-time failures)
+const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const isDevelopmentMode = !publishableKey || publishableKey === "pk_test_placeholder";
 
 export default function PricingPage() {
   return (

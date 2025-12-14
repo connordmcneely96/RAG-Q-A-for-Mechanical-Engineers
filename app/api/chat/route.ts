@@ -7,7 +7,7 @@ import { ENGINEERING_SYSTEM_PROMPT } from "@/lib/rag/prompts";
 
 // Use Node.js runtime for LangChain and Pinecone compatibility
 export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 export const maxDuration = 60;
 
 export async function POST(req: Request) {

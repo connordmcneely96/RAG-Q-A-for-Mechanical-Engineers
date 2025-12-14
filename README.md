@@ -51,10 +51,10 @@
 - **Session Management:** Clerk + Next.js middleware
 
 ### Deployment
-- **Hosting:** Vercel
+- **Hosting:** Cloudflare Pages
 - **Vector Storage:** Pinecone Cloud
 - **Database:** Supabase
-- **Edge Functions:** Vercel Edge Runtime
+- **Edge Functions:** Cloudflare Workers (via Pages Functions)
 
 ## 🏗️ Architecture
 
@@ -65,7 +65,7 @@
 └────────────────────┬────────────────────────────────────────┘
                      │
 ┌────────────────────▼────────────────────────────────────────┐
-│                    API Routes (Edge)                         │
+│                    API Routes (Workers)                      │
 │  /api/chat - Streaming RAG responses                        │
 │  /api/documents - Upload & process PDFs                     │
 │  /api/conversations - Manage chat history                   │
@@ -320,6 +320,27 @@ MechAssist AI can answer questions like:
 - "Calculate the stress in a cantilever beam with these dimensions..."
 - "What's the difference between ASME Y14.5-2009 and Y14.5-2018?"
 
+## ☁️ Deploying to Cloudflare Pages
+
+This repo is set up to deploy to **Cloudflare Pages** using `@cloudflare/next-on-pages`.
+
+- **Build command**: `npm run build:cloudflare`
+- **Output directory**: `.vercel/output/static`
+- **Runtime**: Cloudflare Workers with `nodejs_compat` enabled (see `wrangler.toml`)
+
+### Environment variables (Cloudflare)
+
+- **Prisma (required)**:
+  - Set `DATABASE_URL` to a **Prisma Accelerate / Data Proxy** URL (starts with `prisma://...`)
+  - Set `DIRECT_URL` to your actual Postgres connection string (used for migrations / `prisma db push`)
+
+### Local Cloudflare Pages dev
+
+```bash
+npm run build:cloudflare
+npm run cf:dev
+```
+
 ## 🎯 Roadmap
 
 - [x] Core RAG system with Gemini + Pinecone
@@ -356,7 +377,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Google Gemini** for the powerful LLM
 - **LangChain** for the RAG framework
 - **Pinecone** for vector storage
-- **Vercel** for hosting
+- **Cloudflare** for hosting
 - **shadcn/ui** for beautiful components
 - **Clerk** for authentication
 

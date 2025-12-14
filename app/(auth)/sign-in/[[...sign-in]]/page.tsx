@@ -1,5 +1,7 @@
 import { SignIn } from "@clerk/nextjs";
 
+export const runtime = "edge";
+
 export default function SignInPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-engineering-blueprint to-primary-900">

@@ -1,8 +1,9 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { getUserByClerkId, createUser } from "../db/queries";
 
-// Development mode: check if using placeholder keys
-const isDevelopmentMode = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY === 'pk_test_placeholder';
+// Development mode / preview: bypass Clerk if keys are missing or placeholders
+const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const isDevelopmentMode = !publishableKey || publishableKey === "pk_test_placeholder";
 
 /**
  * Get or create user in our database based on Clerk authentication

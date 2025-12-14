@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { getOrCreateUser } from "@/lib/auth/clerk";
 
 export const dynamic = 'force-dynamic';
+export const runtime = "edge";
 
 export default async function DashboardPage() {
   const user = await getOrCreateUser();
